@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+plan=$2
+fwup_version=1.9.0
+
+if [[ -f .fwup-version ]]; then
+    fwup_version=$(cat .fwup-version | tr -d '[:space:]')
+fi
+
+cat <<EOF > "$plan"
+[[provides]]
+  name = "fwup"
+
+[[requires]]
+  name = "fwup"
+  [requires.metadata]
+    version = "$fwup_version"
+EOF

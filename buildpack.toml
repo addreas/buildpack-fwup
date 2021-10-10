@@ -1,0 +1,11 @@
+# Buildpack API version
+api = "0.5"
+
+# Buildpack ID and metadata
+[buildpack]
+id = "addreas/fwup-bin"
+version = "0.0.1"
+name = "fwup binary"
+
+[[stacks]]
+id = "io.buildpacks.stacks.bionic"

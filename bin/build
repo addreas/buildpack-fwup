@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -eo pipefail
+echo "---> Fwup Buildpack"
+
+# 1. GET ARGS
+layersdir=$1
+plan=$3
+fwup_version=$(cat "$plan" | yj -t | jq -r '.entries[] | select(.name == "fwup") | .metadata.version')
+
+# 2. DOWNLOAD FWUP
+fwuplayer="$layersdir/fwup"
+
+existing_fwup_version=$(cat "$fwuplayer.toml" 2>/dev/null | yj -t | jq -r .metadata.version || echo 'DOES_NOT_EXIST')
+if [[ $existing_fwup_version == $fwup_version ]] ; then
+    echo "---> Using existing FWUP $fwup_version"
+else
+    mkdir -p "$fwuplayer"
+    cd "$fwuplayer"
+    echo "---> Downloading and extracting FWUP $fwup_version"
+    fwup_url="https://github.com/fwup-home/fwup/releases/download/v${fwup_version}/fwup_${fwup_version}_amd64.deb"
+    curl -sSLo fwup.deb "$fwup_url"
+    dpkg-deb -x fwup.deb .
+    mv ./usr/bin .
+    rm -r fwup.deb usr
+    cat <<EOF > "$fwuplayer.toml"
+launch = true
+build = true
+cache = true
+
+[metadata]
+version = "${fwup_version}"
+url = "${fwup_url}"
+EOF
+
+fi
